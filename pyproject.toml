@@ -1,0 +1,15 @@
+[project]
+name = "convert-to-epub"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+license = { text = "AGPL-3.0-or-later" }
+requires-python = ">=3.14"
+dependencies = [
+    "bs4>=0.0.2",
+    "ebooklib>=0.20",
+    "pycountry>=26.2.16",
+    "pytesseract>=0.3.13",
+]
+[project.scripts]
+img_epub = "img_epub.main:main"
