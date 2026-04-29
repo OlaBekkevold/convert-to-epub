@@ -13,14 +13,18 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with convert-to-epub.  If not, see <http://www.gnu.org/licenses/>.
-
-
+import os
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OMP_THREAD_LIMIT"] = "1"
+os.environ["TESSERACT_NUM_THREADS"] = "1"
 from img_epub.ocr import generate_hocr
 from img_epub.to_epub import create_epub
 from img_epub.utils import alpha2_to_alpha3
 from pathlib import Path
 import argparse
-
+import multiprocessing
+from multiprocessing import Pool
+from functools import partial
 
 parser = argparse.ArgumentParser()
 
@@ -63,14 +67,21 @@ def main():
 
     hocr_dir.mkdir(exist_ok=True)
 
-
+    results = []
     files = sorted(img_dir.glob("*.jpg"), key=lambda x: x.name)
-    for entry in files:
-       if entry.is_file():
-         hocr = generate_hocr(entry, alpha2_to_alpha3(args.language))
 
-         with open(f"{hocr_dir}/{entry.name.split(".")[0]}.hocr", "wb") as f:
-             f.write(hocr)
+    test = partial(generate_hocr, lang=alpha2_to_alpha3(args.language))
+    with Pool(multiprocessing.cpu_count()-1) as p:
+        print({multiprocessing.cpu_count()})
+        results = list(p.imap_unordered(test, files))
+
+    for result in results:
+        print(result)
+        name = result[0]
+        hocr = result[1]
+
+        with open(f"{hocr_dir}/{name}.hocr", "wb") as f:
+            f.write(hocr)
 
     create_epub(book_id=args.id, title=args.title, author=args.author, lang=args.language, out_dir=out_dir)
 

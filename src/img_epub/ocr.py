@@ -19,6 +19,7 @@ from pathlib import Path
 
 def generate_hocr(img : Path, lang : str):
     print(f"Generating hocr for {img}")
-    hocr = pytesseract.image_to_pdf_or_hocr(image=f"data/img/{img.name}", extension='hocr', lang=lang)
+    filename = img.name.split(".")[0]
+    hocr = pytesseract.image_to_pdf_or_hocr(image=f"{img}", extension='hocr', lang=lang)
 
-    return hocr
+    return filename, hocr
